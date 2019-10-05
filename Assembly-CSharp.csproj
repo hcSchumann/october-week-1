@@ -56,6 +56,7 @@
      <Compile Include="Assets\Scripts\EnemyDetectionBehaviour.cs" />
      <Compile Include="Assets\Scripts\PlayerControls.cs" />
      <Compile Include="Assets\Scripts\SurroundingDetection.cs" />
+     <Compile Include="Assets\Scripts\Triangle.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>D:/Documents/Programming/october-week-1/october-week1/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

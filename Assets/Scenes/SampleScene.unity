@@ -926,7 +926,6 @@ GameObject:
   - component: {fileID: 2030333917}
   - component: {fileID: 2030333916}
   - component: {fileID: 2030333915}
-  - component: {fileID: 2030333920}
   - component: {fileID: 2030333921}
   - component: {fileID: 2030333922}
   - component: {fileID: 2030333923}
@@ -1109,117 +1108,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2030333914}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.68, y: 1.97, z: -2.44}
+  m_LocalPosition: {x: 20.82, y: 0.5, z: -15.88}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!82 &2030333920
-AudioSource:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2030333914}
-  m_Enabled: 0
-  serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 26a517703d5227149a1a20f31b8c6be0, type: 3}
-  m_PlayOnAwake: 1
-  m_Volume: 1
-  m_Pitch: 1
-  Loop: 1
-  Mute: 0
-  Spatialize: 0
-  SpatializePostEffects: 0
-  Priority: 128
-  DopplerLevel: 1
-  MinDistance: 0
-  MaxDistance: 15
-  Pan2D: 0
-  rolloffMode: 2
-  BypassEffects: 0
-  BypassListenerEffects: 0
-  BypassReverbZones: 0
-  rolloffCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1.0000683
-      inSlope: -5.0019917
-      outSlope: -5.0019917
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.34784663
-      value: 0.287068
-      inSlope: -0.89538264
-      outSlope: -0.89538264
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.13927084
-      outWeight: 0.1955021
-    - serializedVersion: 3
-      time: 1
-      value: 0.0087890625
-      inSlope: -0.20007975
-      outSlope: -0.20007975
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  panLevelCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  spreadCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  reverbZoneMixCustomCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!114 &2030333921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1246,7 +1140,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 80
+  m_Constraints: 84
   m_CollisionDetection: 0
 --- !u!114 &2030333923
 MonoBehaviour:
@@ -1261,8 +1155,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sweepAngleStep: 0.05
-  detectionDistanceLimit: 50
+  intermediatePointStep: 250
+  detectionDistanceLimit: 20
   detectedPointPrefab: {fileID: 5830070006668586191, guid: 6fa2d8685c8b5f747a7b96d82ab8f3c6,
     type: 3}
-  surroundingCorners: []
-  surroundingObjects: []
+  intermediatePointPrefab: {fileID: 6768251467958628144, guid: f45565c92d5a30f4aac5ec8ef3e5c8d0,
+    type: 3}
+  trianglePrefab: {fileID: 6155050757493680681, guid: cf1e0a66524c35e43a8d8201a1124f87,
+    type: 3}
