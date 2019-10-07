@@ -1,21 +1,24 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class SurroundingDetection : MonoBehaviour
 {
+    public bool DebugMode = false;
+
+    [SerializeField] private string[] targetObjectTag;
     [SerializeField] private float sweepAngleStep = 0.1f;
     [SerializeField] private int intermediatePointStep = 50;
     [SerializeField] private float detectionDistanceLimit = 10f;
 
+    public TrianglePool trianglePool;
     public GameObject detectedPointPrefab;
     public GameObject intermediatePointPrefab;
-    public GameObject trianglePrefab;
 
     private Vector3 previousPosition;
 
-    private List<GameObject> surroundingCorners;
-    private List<GameObject> soundAreaShapes;
+    private List<Vector3> surroundingCornersPoints;
+    private List<GameObject> surroundingCornerObjects;
 
     private struct DirectionCheckResult
     {
@@ -27,57 +30,62 @@ public class SurroundingDetection : MonoBehaviour
 
     private DirectionCheckResult CheckGivenDirection(Vector3 direction, Vector3 position, DirectionCheckResult lastResult)
     {
-        var intermediatePointStepCount = lastResult.IsEmpty ? 0 : lastResult.intermediatePointStepCount;
-        var lastHittedObject = lastResult.IsEmpty ? null : lastResult.lastHittedObject;
-        var lastHittedPoint = lastResult.IsEmpty ? Vector3.zero : lastResult.lastHittedPoint;
-
-        var hit = new RaycastHit();
+        var intermediatePointStepCount = lastResult.intermediatePointStepCount;
+        var lastHittedObject = lastResult.lastHittedObject;
+        var lastHittedPoint = lastResult.lastHittedPoint;
 
         GameObject hitedObject = null;
         Vector3 hitedPoint = Vector3.zero;
 
-        if (Physics.Raycast(position, direction, out hit, detectionDistanceLimit))
+        var hitList = Physics.RaycastAll(position, direction, detectionDistanceLimit);
+        Array.Sort(hitList, new RaycastHitSorting(position));
+
+        foreach (var hit in hitList)
         {
-            hitedObject = hit.transform.gameObject;
-            hitedPoint = hit.point;
-            intermediatePointStepCount = 0;
+            if (IsATargetObject(hit.transform.gameObject))
+            {
+                var obj = hit.transform.gameObject;
+                hitedObject = obj;
+                hitedPoint = hit.point;
+                intermediatePointStepCount = 0;
+                break;
+            }
         }
 
         if (!lastResult.IsEmpty && hitedObject != lastHittedObject)
         {
             if (lastHittedObject != null)
             {
-                surroundingCorners.Add(Instantiate(detectedPointPrefab, lastHittedPoint, new Quaternion()));
+                surroundingCornersPoints.Add(lastHittedPoint);
+                if (DebugMode) surroundingCornerObjects.Add(Instantiate(detectedPointPrefab, lastHittedPoint, new Quaternion()));
             }
             if (hitedObject != null)
             {
-                surroundingCorners.Add(Instantiate(detectedPointPrefab, hitedPoint, new Quaternion()));
+                surroundingCornersPoints.Add(hitedPoint);
+                if (DebugMode) surroundingCornerObjects.Add(Instantiate(detectedPointPrefab, hitedPoint, new Quaternion()));
             }
         }
         else if (intermediatePointStepCount == intermediatePointStep)
         {
             var intermediatePos = transform.position + direction * detectionDistanceLimit;
-            surroundingCorners.Add(Instantiate(intermediatePointPrefab, intermediatePos, new Quaternion()));
+            surroundingCornersPoints.Add(intermediatePos);
             intermediatePointStepCount = 0;
+            if (DebugMode) surroundingCornerObjects.Add(Instantiate(intermediatePointPrefab, intermediatePos, new Quaternion()));
         }
 
-        var result = new DirectionCheckResult
-        {
-            lastHittedObject = hitedObject,
-            lastHittedPoint = hitedPoint,
-            intermediatePointStepCount = intermediatePointStepCount
-        };
+        lastResult.IsEmpty = false;
+        lastResult.lastHittedObject = hitedObject;
+        lastResult.lastHittedPoint = hitedPoint;
+        lastResult.intermediatePointStepCount = intermediatePointStepCount;
 
-        return result;
+        return lastResult;
     }
 
     private void CheckSurroundingDirections()
     {
-        if (surroundingCorners != null)
-        {
-            foreach (var corner in surroundingCorners) Destroy(corner);
-        }
-        surroundingCorners = new List<GameObject>();
+        if (DebugMode) ClearSurroundingCornerObjects();
+
+        surroundingCornersPoints = new List<Vector3>();
 
         var startDirection = transform.forward;
         var direction = startDirection;
@@ -101,31 +109,23 @@ public class SurroundingDetection : MonoBehaviour
 
     private void DrawSoundArea()
     {
-        if (soundAreaShapes != null)
-        {
-            foreach (var corner in soundAreaShapes) Destroy(corner);
-        }
-        soundAreaShapes = new List<GameObject>();
+        trianglePool.ResetTrianglePool();
 
-        var surroundingCornersAmount = surroundingCorners.Count;
+        var surroundingCornersAmount = surroundingCornersPoints.Count;
         var pos = transform.position;
 
-        int[] verticesOrder = { 0, 1, 2 };
         for (int i = 0; i < surroundingCornersAmount; i++)
         {
-            var triangle = Instantiate(trianglePrefab, transform.position, new Quaternion());
-            soundAreaShapes.Add(triangle);
-
             Vector3[] triangleVertices = {
-                surroundingCorners[i].transform.position - pos,
-                surroundingCorners[(i + 1) % surroundingCornersAmount].transform.position - pos,
+                surroundingCornersPoints[i] - pos,
+                surroundingCornersPoints[(i + 1) % surroundingCornersAmount] - pos,
                 Vector3.zero
             };
-            triangle.GetComponent<Triangle>().SetUpTriangle(triangleVertices, verticesOrder);
+            trianglePool.DrawTriangle(pos, triangleVertices);
         }
     }
 
-    // Update is called once per frame
+
     void Update()
     {
         if (transform.position == previousPosition)
@@ -137,4 +137,24 @@ public class SurroundingDetection : MonoBehaviour
         DrawSoundArea();
         previousPosition = transform.position;
     }
+
+    private void ClearSurroundingCornerObjects()
+    {
+        if (surroundingCornerObjects != null)
+        {
+            foreach (var corner in surroundingCornerObjects) Destroy(corner);
+        }
+        surroundingCornerObjects = new List<GameObject>();
+    }
+
+    private bool IsATargetObject(GameObject obj)
+    {
+        foreach (var tag in targetObjectTag)
+        {
+            if (obj.tag == tag) return true;
+        }
+        return false;
+    }
+
+
 }
