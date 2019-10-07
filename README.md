@@ -18,3 +18,9 @@ On day 3 I was able to start working on my new plan. I implemented the first ste
 # DAY 4
 On day 4 I implemented the sound area draw function using triangles created via mesh. The vertices of the triangles were a combination of the edge points (implemented on day 3), the player's position and some intermediate points (when the raycast hits nothing a number of times consecutively).
 Tomorrow I intend to make the enemy react to being on the sound area and also make the edge detection algorithm ignore the enemy.
+
+# DAY 5
+I spent almost literally the whole day hanging out with friends. Did not do any work.
+
+# Day 6
+Day 6 was the day for refactoring. I extracted some code into smaller functions and improved the rendering performance. I implemented a pooling class for all the triangles and got some good results, the rendering is way better now. I've also implemented a tag filter system, so the detection of surrounding objects only interact with "SoundObstacles" objects. I still need to make the enemy 'detect' the player, when he is inside his sound area.
