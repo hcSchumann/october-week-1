@@ -17,7 +17,61 @@ public class SurroundingDetection : MonoBehaviour
     private List<GameObject> surroundingCorners;
     private List<GameObject> soundAreaShapes;
 
-    private void SweepSurrounding()
+    private struct DirectionCheckResult
+    {
+        public bool IsEmpty;
+        public GameObject lastHittedObject;
+        public Vector3 lastHittedPoint;
+        public int intermediatePointStepCount;
+    }
+
+    private DirectionCheckResult CheckGivenDirection(Vector3 direction, Vector3 position, DirectionCheckResult lastResult)
+    {
+        var intermediatePointStepCount = lastResult.IsEmpty ? 0 : lastResult.intermediatePointStepCount;
+        var lastHittedObject = lastResult.IsEmpty ? null : lastResult.lastHittedObject;
+        var lastHittedPoint = lastResult.IsEmpty ? Vector3.zero : lastResult.lastHittedPoint;
+
+        var hit = new RaycastHit();
+
+        GameObject hitedObject = null;
+        Vector3 hitedPoint = Vector3.zero;
+
+        if (Physics.Raycast(position, direction, out hit, detectionDistanceLimit))
+        {
+            hitedObject = hit.transform.gameObject;
+            hitedPoint = hit.point;
+            intermediatePointStepCount = 0;
+        }
+
+        if (!lastResult.IsEmpty && hitedObject != lastHittedObject)
+        {
+            if (lastHittedObject != null)
+            {
+                surroundingCorners.Add(Instantiate(detectedPointPrefab, lastHittedPoint, new Quaternion()));
+            }
+            if (hitedObject != null)
+            {
+                surroundingCorners.Add(Instantiate(detectedPointPrefab, hitedPoint, new Quaternion()));
+            }
+        }
+        else if (intermediatePointStepCount == intermediatePointStep)
+        {
+            var intermediatePos = transform.position + direction * detectionDistanceLimit;
+            surroundingCorners.Add(Instantiate(intermediatePointPrefab, intermediatePos, new Quaternion()));
+            intermediatePointStepCount = 0;
+        }
+
+        var result = new DirectionCheckResult
+        {
+            lastHittedObject = hitedObject,
+            lastHittedPoint = hitedPoint,
+            intermediatePointStepCount = intermediatePointStepCount
+        };
+
+        return result;
+    }
+
+    private void CheckSurroundingDirections()
     {
         if (surroundingCorners != null)
         {
@@ -26,53 +80,22 @@ public class SurroundingDetection : MonoBehaviour
         surroundingCorners = new List<GameObject>();
 
         var startDirection = transform.forward;
-        var firstIteration = true;
-
         var direction = startDirection;
         var position = transform.position;
 
-        GameObject lastHittedObject = null;
-        Vector3 lastHittedPoint = Vector3.zero;
-        int intermediatePointStepCount = 0;
+        var directionCheckResult = new DirectionCheckResult
+        {
+            IsEmpty = true
+        };
 
         var iterations = Mathf.CeilToInt(360f / sweepAngleStep);
         for (int i = 0; i < iterations; i++)
         {
-            intermediatePointStepCount++;
-            var hit = new RaycastHit();
+            directionCheckResult.intermediatePointStepCount++;
 
-            GameObject hitedObject = null;
-            Vector3 hitedPoint = Vector3.zero;
-            if (Physics.Raycast(position, direction, out hit, detectionDistanceLimit))
-            {
-                hitedObject = hit.transform.gameObject;
-                hitedPoint = hit.point;
-                intermediatePointStepCount = 0;
-            }
-
-            if (!firstIteration && hitedObject != lastHittedObject)
-            {
-                if (lastHittedObject != null)
-                {
-                    surroundingCorners.Add(Instantiate(detectedPointPrefab, lastHittedPoint, new Quaternion()));
-                }
-                if (hitedObject != null)
-                {
-                    surroundingCorners.Add(Instantiate(detectedPointPrefab, hitedPoint, new Quaternion()));
-                }
-            }
-            else if (intermediatePointStepCount == intermediatePointStep)
-            {
-                var intermediatePos = transform.position + direction * detectionDistanceLimit;
-                surroundingCorners.Add(Instantiate(intermediatePointPrefab, intermediatePos, new Quaternion()));
-                intermediatePointStepCount = 0;
-            }
-
-            lastHittedObject = hitedObject;
-            lastHittedPoint = hitedPoint;
+            directionCheckResult = CheckGivenDirection(direction, position, directionCheckResult);
 
             direction = Quaternion.Euler(0, sweepAngleStep, 0) * direction;
-            firstIteration = false;
         }
     }
 
@@ -101,6 +124,7 @@ public class SurroundingDetection : MonoBehaviour
             triangle.GetComponent<Triangle>().SetUpTriangle(triangleVertices, verticesOrder);
         }
     }
+
     // Update is called once per frame
     void Update()
     {
@@ -109,7 +133,7 @@ public class SurroundingDetection : MonoBehaviour
             return;
         }
 
-        SweepSurrounding();
+        CheckSurroundingDirections();
         DrawSoundArea();
         previousPosition = transform.position;
     }
